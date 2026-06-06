@@ -1,78 +1,363 @@
-window.SCRIPTURE_DATA = [
-  { id: 'rev7', ref: '요한계시록 7장', category: '전체 암기', preferredMode: 'read', verses: [
-    [1,'이 일 후에 내가 네 천사가 땅 네 모퉁이에 선 것을 보니 땅의 사방의 바람을 붙잡아 바람으로 하여금 땅에나 바다에나 각종 나무에 불지 못하게 하더라'],
-    [2,'또 보매 다른 천사가 살아 계신 하나님의 인을 가지고 해 돋는 데로부터 올라와서 땅과 바다를 해롭게 할 권세를 얻은 네 천사를 향하여 큰 소리로 외쳐'],
-    [3,'가로되 우리가 우리 하나님의 종들의 이마에 인치기까지 땅이나 바다나 나무나 해하지 말라 하더라'],
-    [4,'내가 인 맞은 자의 수를 들으니 이스라엘 자손의 각 지파 중에서 인 맞은 자들이 십사만 사천이니'],
-    [5,'유다 지파 중에 인 맞은 자가 일만 이천이요 르우벤 지파 중에 일만 이천이요 갓 지파 중에 일만 이천이요'],
-    [6,'아셀 지파 중에 일만 이천이요 납달리 지파 중에 일만 이천이요 므낫세 지파 중에 일만 이천이요'],
-    [7,'시므온 지파 중에 일만 이천이요 레위 지파 중에 일만 이천이요 잇사갈 지파 중에 일만 이천이요'],
-    [8,'스블론 지파 중에 일만 이천이요 요셉 지파 중에 일만 이천이요 베냐민 지파 중에 인 맞은 자가 일만 이천이라'],
-    [9,'이 일 후에 내가 보니 각 나라와 족속과 백성과 방언에서 아무라도 능히 셀 수 없는 큰 무리가 흰 옷을 입고 손에 종려 가지를 들고 보좌 앞과 어린 양 앞에 서서'],
-    [10,'큰 소리로 외쳐 가로되 구원하심이 보좌에 앉으신 우리 하나님과 어린 양에게 있도다 하니'],
-    [11,'모든 천사가 보좌와 장로들과 네 생물의 주위에 섰다가 보좌 앞에 엎드려 얼굴을 대고 하나님께 경배하여'],
-    [12,'가로되 아멘 찬송과 영광과 지혜와 감사와 존귀와 능력과 힘이 우리 하나님께 세세토록 있을지로다 아멘 하더라'],
-    [13,'장로 중에 하나가 응답하여 내게 이르되 이 흰 옷 입은 자들이 누구며 또 어디서 왔느뇨'],
-    [14,'내가 가로되 내 주여 당신이 알리이다 하니 그가 나더러 이르되 이는 큰 환난에서 나오는 자들인데 어린 양의 피에 그 옷을 씻어 희게 하였느니라'],
-    [15,'그러므로 그들이 하나님의 보좌 앞에 있고 또 그의 성전에서 밤낮 하나님을 섬기매 보좌에 앉으신 이가 그들 위에 장막을 치시리니'],
-    [16,'저희가 다시 주리지도 아니하며 목마르지도 아니하고 해나 아무 뜨거운 기운에 상하지 아니할찌니'],
-    [17,'이는 보좌 가운데 계신 어린 양이 저희의 목자가 되사 생명수 샘으로 인도하시고 하나님께서 저희 눈에서 모든 눈물을 씻어 주실 것임이러라']
-  ]},
-  { id: 'rev14', ref: '요한계시록 14장', category: '빈칸 채우기 중심', preferredMode: 'blank', verses: [
-    [1,'또 내가 보니 어린 양이 시온 산에 섰고 그와 함께 십사만 사천이 섰는데 그 이마에 어린 양의 이름과 그 아버지의 이름을 쓴 것이 있도다'],
-    [2,'내가 하늘에서 나는 소리를 들으니 많은 물소리도 같고 큰 뇌성도 같은데 내게 들리는 소리는 거문고 타는 자들의 그 거문고 타는 것 같더라'],
-    [3,'저희가 보좌와 네 생물과 장로들 앞에서 새 노래를 부르니 땅에서 구속함을 얻은 십사만 사천 인 밖에는 능히 이 노래를 배울 자가 없더라'],
-    [4,'이 사람들은 여자로 더불어 더럽히지 아니하고 정절이 있는 자라 어린 양이 어디로 인도하든지 따라가는 자며 사람 가운데서 구속을 받아 처음 익은 열매로 하나님과 어린 양에게 속한 자들이니'],
-    [5,'그 입에 거짓말이 없고 흠이 없는 자들이더라'],
-    [6,'또 보니 다른 천사가 공중에 날아가는데 땅에 거하는 자들 곧 여러 나라와 족속과 방언과 백성에게 전할 영원한 복음을 가졌더라'],
-    [7,'그가 큰 음성으로 가로되 하나님을 두려워하며 그에게 영광을 돌리라 이는 그의 심판하실 시간이 이르렀음이니 하늘과 땅과 바다와 물들의 근원을 만드신 이를 경배하라 하더라'],
-    [8,'또 다른 천사 곧 둘째가 그 뒤를 따라 말하되 무너졌도다 무너졌도다 큰 성 바벨론이여 모든 나라를 그 음행으로 인하여 진노의 포도주로 먹이던 자로다 하더라'],
-    [9,'또 다른 천사 곧 셋째가 그 뒤를 따라 큰 음성으로 가로되 만일 누구든지 짐승과 그의 우상에게 경배하고 이마에나 손에 표를 받으면'],
-    [10,'그도 하나님의 진노의 포도주를 마시리니 그 진노의 잔에 섞인 것이 없이 부은 포도주라 거룩한 천사들 앞과 어린 양 앞에서 불과 유황으로 고난을 받으리니'],
-    [11,'그 고난의 연기가 세세토록 올라가리로다 짐승과 그의 우상에게 경배하고 그 이름의 표를 받는 자는 누구든지 밤낮 쉼을 얻지 못하리라 하더라'],
-    [12,'성도들의 인내가 여기 있나니 저희는 하나님의 계명과 예수 믿음을 지키는 자니라'],
-    [13,'또 내가 들으니 하늘에서 음성이 나서 가로되 기록하라 자금 이후로 주 안에서 죽는 자들은 복이 있도다 하시매 성령이 가라사대 그러하다 저희 수고를 그치고 쉬리니 이는 저희의 행한 일이 따름이라 하시더라'],
-    [14,'또 내가 보니 흰 구름이 있고 구름 위에 사람의 아들과 같은 이가 앉았는데 그 머리에는 금 면류관이 있고 그 손에는 이한 낫을 가졌더라'],
-    [15,'또 다른 천사가 성전으로부터 나와 구름 위에 앉은 이를 향하여 큰 음성으로 외쳐 가로되 네 낫을 휘둘러 거두라 거둘 때가 이르러 땅에 곡식이 다 익었음이로다 하니'],
-    [16,'구름 위에 앉으신 이가 낫을 땅에 휘두르매 곡식이 거두어지니라'],
-    [17,'또 다른 천사가 하늘에 있는 성전에서 나오는데 또한 이한 낫을 가졌더라'],
-    [18,'또 불을 다스리는 다른 천사가 제단으로부터 나와 이한 낫 가진 자를 향하여 큰 음성으로 불러 가로되 네 이한 낫을 휘둘러 땅의 포도송이를 거두라 그 포도가 익었느니라 하더라'],
-    [19,'천사가 낫을 땅에 휘둘러 땅의 포도를 거두어 하나님의 진노의 큰 포도주 틀에 던지매'],
-    [20,'성 밖에서 그 틀이 밟히니 틀에서 피가 나서 말굴레까지 닿았고 일천육백 스다디온에 퍼졌더라']
-  ]},
-  { id: 'rev15', ref: '요한계시록 15장', category: '빈칸 채우기 중심', preferredMode: 'blank', verses: [
-    [1,'또 하늘에 크고 이상한 다른 이적을 보매 일곱 천사가 일곱 재앙을 가졌으니 곧 마지막 재앙이라 하나님의 진노가 이것으로 마치리로다'],
-    [2,'또 내가 보니 불이 섞인 유리 바다 같은 것이 있고 짐승과 그의 우상과 그의 이름의 수를 이기고 벗어난 자들이 유리 바닷가에 서서 하나님의 거문고를 가지고'],
-    [3,'하나님의 종 모세의 노래, 어린 양의 노래를 불러 가로되 주 하나님 곧 전능하신 이시여 하시는 일이 크고 기이하시도다 만국의 왕이시여 주의 길이 의롭고 참되시도다'],
-    [4,'주여 누가 주의 이름을 두려워하지 아니하며 영화롭게 하지 아니하오리이까 오직 주만 거룩하시니이다 주의 의로우신 일이 나타났으매 만국이 와서 주께 경배하리이다 하더라'],
-    [5,'또 이 일 후에 내가 보니 하늘에 증거 장막의 성전이 열리며'],
-    [6,'일곱 재앙을 가진 일곱 천사가 성전으로부터 나와 맑고 빛난 세마포 옷을 입고 가슴에 금띠를 띠고'],
-    [7,'네 생물 중에 하나가 세세에 계신 하나님의 진노를 가득히 담은 금 대접 일곱을 그 일곱 천사에게 주니'],
-    [8,'하나님의 영광과 능력을 인하여 성전에 연기가 차게 되매 일곱 천사의 일곱 재앙이 마치기까지는 성전에 능히 들어갈 자가 없더라']
-  ]},
-  { id: 'rev1-1-3', ref: '요한계시록 1:1~3', category: '구간 암기', preferredMode: 'read', verses: [
-    [1,'예수 그리스도의 계시라 이는 하나님이 그에게 주사 반드시 속히 될 일을 그 종들에게 보이시려고 그 천사를 그 종 요한에게 보내어 지시하신 것이라'],
-    [2,'요한은 하나님의 말씀과 예수 그리스도의 증거 곧 자기의 본 것을 다 증거하였느니라'],
-    [3,'이 예언의 말씀을 읽는 자와 듣는 자들과 그 가운데 기록한 것을 지키는 자들이 복이 있나니 때가 가까움이라']
-  ]},
-  { id: 'rev10-10-11', ref: '요한계시록 10:10~11', category: '구간 암기', preferredMode: 'read', verses: [
-    [10,'내가 천사의 손에서 작은 책을 갖다 먹어버리니 내 입에는 꿀 같이 다나 먹은 후에 내 배에서는 쓰게 되더라'],
-    [11,'저가 내게 말하기를 네가 많은 백성과 나라와 방언과 임금에게 다시 예언하여야 하리라 하더라']
-  ]},
-  { id: 'rev20-4-6', ref: '요한계시록 20:4~6', category: '구간 암기', preferredMode: 'read', verses: [
-    [4,'또 내가 보좌들을 보니 거기 앉은 자들이 있어 심판하는 권세를 받았더라 또 내가 보니 예수의 증거와 하나님의 말씀을 인하여 목 베임을 받은 자의 영혼들과 또 짐승과 그의 우상에게 경배하지도 아니하고 이마와 손에 그의 표를 받지도 아니한 자들이 살아서 그리스도로 더불어 천 년 동안 왕 노릇 하니'],
-    [5,'(그 나머지 죽은 자들은 그 천 년이 차기까지 살지 못하더라) 이는 첫째 부활이라'],
-    [6,'이 첫째 부활에 참예하는 자들은 복이 있고 거룩하도다 둘째 사망이 그들을 다스리는 권세가 없고 도리어 그들이 하나님과 그리스도의 제사장이 되어 천 년 동안 그리스도로 더불어 왕 노릇 하리라']
-  ]},
-  { id: 'rev22-1-5', ref: '요한계시록 22:1~5', category: '구간 암기', preferredMode: 'read', verses: [
-    [1,'또 저가 수정 같이 맑은 생명수의 강을 내게 보이니 하나님과 및 어린 양의 보좌로부터 나서'],
-    [2,'길 가운데로 흐르더라 강 좌우에 생명나무가 있어 열두 가지 실과를 맺히되 달마다 그 실과를 맺히고 그 나무 잎사귀들은 만국을 소성하기 위하여 있더라'],
-    [3,'다시 저주가 없으며 하나님과 그 어린 양의 보좌가 그 가운데 있으리니 그의 종들이 그를 섬기며'],
-    [4,'그의 얼굴을 볼 터이요 그의 이름도 저희 이마에 있으리라'],
-    [5,'다시 밤이 없겠고 등불과 햇빛이 쓸 데 없으니 이는 주 하나님이 저희에게 비취심이라 저희가 세세토록 왕 노릇 하리로다']
-  ]},
-  { id: 'rev22-18-19', ref: '요한계시록 22:18~19', category: '구간 암기', preferredMode: 'read', verses: [
-    [18,'내가 이 책의 예언의 말씀을 듣는 각인에게 증거하노니 만일 누구든지 이것들 외에 더하면 하나님이 이 책에 기록된 재앙들을 그에게 더하실 터이요'],
-    [19,'만일 누구든지 이 책의 예언의 말씀에서 제하여 버리면 하나님이 이 책에 기록된 생명나무와 및 거룩한 성에 참예함을 제하여 버리시리라']
-  ]}
-];
+const STORAGE_KEY = 'revelation-memory-progress-v1';
+const data = window.SCRIPTURE_DATA;
+let progress = loadProgress();
+let currentIndex = Math.max(0, data.findIndex(item => item.id === progress.lastId));
+let blankRate = 0.3;
+let revealed = false;
+let revealedBlanks = new Set();
+let typingDrafts = {};
+let typingResults = {};
+let typingAnswerVisible = new Set();
+let selectedCalendarDate = localDateKey(new Date());
+let calendarCursor = monthStart(new Date());
+
+const $ = (id) => document.getElementById(id);
+const passageList = $('passageList');
+const verseArea = $('verseArea');
+const modeSelect = $('modeSelect');
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+function monthStart(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
+function parseLocalDate(key) {
+  const [year, month, day] = key.split('-').map(Number);
+  return new Date(year, month - 1, day);
+}
+function normalizeProgress(raw = {}) {
+  return {
+    mastered: {},
+    review: {},
+    activity: {},
+    lastId: data?.[0]?.id || '',
+    ...raw,
+    mastered: raw.mastered || {},
+    review: raw.review || {},
+    activity: raw.activity || {}
+  };
+}
+function loadProgress() {
+  try { return normalizeProgress(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); }
+  catch { return normalizeProgress(); }
+}
+function persistProgress() { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }
+function saveProgress() {
+  persistProgress();
+  updateDashboard();
+  renderList();
+  renderCalendar();
+}
+function current() { return data[currentIndex]; }
+function masteredCount() { return data.filter(item => progress.mastered[item.id]).length; }
+function getActivity(dateKey) {
+  return progress.activity[dateKey] || { mastered: [], typingPassed: [] };
+}
+function ensureActivity(dateKey) {
+  if (!progress.activity[dateKey]) progress.activity[dateKey] = { mastered: [], typingPassed: [] };
+  if (!Array.isArray(progress.activity[dateKey].mastered)) progress.activity[dateKey].mastered = [];
+  if (!Array.isArray(progress.activity[dateKey].typingPassed)) progress.activity[dateKey].typingPassed = [];
+  return progress.activity[dateKey];
+}
+function recordActivity(type, id) {
+  const activity = ensureActivity(localDateKey());
+  if (!activity[type].includes(id)) activity[type].push(id);
+  saveProgress();
+}
+function updateDashboard() {
+  const count = masteredCount();
+  const percent = Math.round(count / data.length * 100);
+  const today = getActivity(localDateKey());
+  $('progressTitle').textContent = `${count}/${data.length}개 암기 완료`;
+  $('progressText').textContent = percent === 100
+    ? `전체 진도 100% · 오늘 암기 ${today.mastered.length}개 · 토씨 통과 ${today.typingPassed.length}개`
+    : `전체 진도 ${percent}% · 복습 필요 ${Object.values(progress.review).filter(Boolean).length}개 · 오늘 토씨 통과 ${today.typingPassed.length}개`;
+  $('progressBar').style.width = `${percent}%`;
+  $('passageCount').textContent = `${data.length}개 범위`;
+}
+function badge(item) {
+  if (progress.mastered[item.id]) return '<span class="mini-badge mastered">암기 완료</span>';
+  if (progress.review[item.id]) return '<span class="mini-badge review">복습 필요</span>';
+  return '<span class="mini-badge">학습 전</span>';
+}
+function renderList() {
+  passageList.innerHTML = data.map((item, index) => `
+    <button class="passage-item" data-index="${index}">
+      <h3>${escapeHtml(item.ref)}</h3>
+      <div class="passage-meta"><span>${escapeHtml(item.category)} · ${item.verses.length}절</span>${badge(item)}</div>
+    </button>`).join('');
+  document.querySelectorAll('.passage-item').forEach(btn => btn.addEventListener('click', () => openStudy(Number(btn.dataset.index))));
+}
+function setActiveView(view) {
+  document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === view));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  $(`${view}View`).classList.add('active');
+  if (view === 'calendar') renderCalendar();
+}
+function openStudy(index, keepMode = false) {
+  currentIndex = (index + data.length) % data.length;
+  const item = current();
+  progress.lastId = item.id;
+  persistProgress();
+  if (!keepMode) modeSelect.value = item.preferredMode || 'read';
+  revealed = false;
+  revealedBlanks.clear();
+  $('studyRef').textContent = item.ref;
+  $('studyCategory').textContent = item.category;
+  renderVerses();
+  setActiveView('study');
+}
+function hashWord(word, idx) {
+  let h = idx + currentIndex * 17;
+  for (const ch of word) h = ((h << 5) - h) + ch.charCodeAt(0);
+  return Math.abs(h % 1000) / 1000;
+}
+function blankify(text, verseNum) {
+  let idx = 0;
+  return text.split(/(\s+)/).map(token => {
+    if (/^\s+$/.test(token) || token.length < 2) return token;
+    const tokenIndex = idx++;
+    const shouldBlank = hashWord(token, tokenIndex) < blankRate;
+    if (!shouldBlank) return token;
+    const key = `${verseNum}-${tokenIndex}`;
+    const isRevealed = revealed || revealedBlanks.has(key);
+    return `<span class="blank${isRevealed ? ' revealed' : ''}" data-blank-key="${key}" role="button" tabindex="0" aria-label="빈칸 정답 보기">${escapeHtml(token)}</span>`;
+  }).join('');
+}
+function initials(text) {
+  const initialMap = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
+  return [...text].map(ch => {
+    const code = ch.charCodeAt(0) - 0xAC00;
+    if (code >= 0 && code <= 11171) return initialMap[Math.floor(code / 588)];
+    return ch;
+  }).join('');
+}
+function typingKey(verseNum) { return `${current().id}-${verseNum}`; }
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[ch]));
+}
+function normalizeForCheck(value) {
+  return String(value || '')
+    .normalize('NFC')
+    .replace(/[\s.,!?，。！？·'“”"‘’():;()\[\]{}]/g, '');
+}
+function typingPassedForCurrent() {
+  return current().verses.every(([num]) => typingResults[typingKey(num)] === true);
+}
+function typingCorrectCount() {
+  return current().verses.filter(([num]) => typingResults[typingKey(num)] === true).length;
+}
+function recordTypingPassIfComplete() {
+  if (!typingPassedForCurrent()) return;
+  const today = ensureActivity(localDateKey());
+  if (!today.typingPassed.includes(current().id)) {
+    today.typingPassed.push(current().id);
+    saveProgress();
+  }
+}
+function renderTypingStatus() {
+  const correct = typingCorrectCount();
+  const total = current().verses.length;
+  const passedToday = getActivity(localDateKey()).typingPassed.includes(current().id);
+  if (passedToday || correct === total) return `<div class="typing-progress passed">토씨 시험 통과 · 오늘 기록됨</div>`;
+  return `<div class="typing-progress">토씨 시험 진행 ${correct}/${total}절</div>`;
+}
+function renderTypingVerse(num, text) {
+  const key = typingKey(num);
+  const draft = typingDrafts[key] || '';
+  const result = typingResults[key];
+  const showAnswer = revealed || typingAnswerVisible.has(key);
+  const resultHtml = result === true
+    ? '<span class="typing-result correct">정답입니다.</span>'
+    : result === false
+      ? '<span class="typing-result wrong">일치하지 않습니다. 토씨를 다시 확인해 보세요.</span>'
+      : '';
+  return `<div class="typing-verse" data-typing-key="${key}" data-answer="${escapeHtml(text)}">
+    <div class="typing-label">${num}절 직접 입력</div>
+    <textarea class="typing-input" rows="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="말씀을 토씨까지 적어 보세요">${escapeHtml(draft)}</textarea>
+    <div class="typing-controls">
+      <button class="typing-check" type="button">정답 확인</button>
+      <button class="typing-show" type="button">${showAnswer ? '정답 숨기기' : '정답 보기'}</button>
+      ${resultHtml}
+    </div>
+    <div class="typing-answer${showAnswer ? '' : ' hidden'}"><strong>정답</strong><br>${escapeHtml(text)}</div>
+  </div>`;
+}
+function renderVerses() {
+  const item = current();
+  if (!item) return;
+  const mode = modeSelect.value;
+  $('difficultyArea').classList.toggle('hidden', mode !== 'blank');
+  $('typingGuide').classList.toggle('hidden', mode !== 'typing');
+  $('revealBtn').textContent = revealed ? '정답 숨기기' : (mode === 'typing' ? '전체 정답 보기' : '정답 보기');
+  $('revealBtn').style.display = mode === 'read' ? 'none' : '';
+  verseArea.classList.remove('empty-state');
+  if (mode === 'typing') {
+    verseArea.innerHTML = renderTypingStatus() + item.verses.map(([num, text]) => renderTypingVerse(num, text)).join('');
+    return;
+  }
+  verseArea.innerHTML = item.verses.map(([num, text]) => {
+    let body = escapeHtml(text);
+    if (mode === 'blank') body = blankify(text, num);
+    if (mode === 'initial') body = `<span class="initial-text">${escapeHtml(initials(text))}</span>${revealed ? `<div class="muted" style="margin-top:7px">${escapeHtml(text)}</div>` : ''}`;
+    return `<div class="verse-row"><span class="verse-num">${num}</span>${body}</div>`;
+  }).join('');
+}
+function mark(type) {
+  const id = current().id;
+  if (type === 'mastered') {
+    progress.mastered[id] = true;
+    delete progress.review[id];
+    recordActivity('mastered', id);
+  } else {
+    progress.review[id] = true;
+    delete progress.mastered[id];
+    saveProgress();
+  }
+  renderVerses();
+}
+function updateOnlineStatus() {
+  const online = navigator.onLine;
+  $('offlineBadge').textContent = online ? '온라인' : '오프라인 사용 중';
+  $('offlineBadge').classList.toggle('offline', !online);
+}
+function dataItem(id) { return data.find(item => item.id === id); }
+function formatDateLabel(key) {
+  const date = parseLocalDate(key);
+  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdays[date.getDay()]})`;
+}
+function renderActivityList(ids, emptyMessage) {
+  if (!ids.length) return `<p class="daily-empty">${emptyMessage}</p>`;
+  return `<ul>${ids.map(id => `<li>${escapeHtml(dataItem(id)?.ref || id)}</li>`).join('')}</ul>`;
+}
+function renderDailySummary() {
+  const activity = getActivity(selectedCalendarDate);
+  $('selectedDateLabel').textContent = formatDateLabel(selectedCalendarDate);
+  $('dailySummary').innerHTML = `
+    <section class="daily-block">
+      <div class="daily-block-title"><strong>암기 완료</strong><span>${activity.mastered.length}개</span></div>
+      ${renderActivityList(activity.mastered, '암기 완료로 기록한 성구가 없습니다.')}
+    </section>
+    <section class="daily-block">
+      <div class="daily-block-title"><strong>토씨 시험 통과</strong><span>${activity.typingPassed.length}개</span></div>
+      ${renderActivityList(activity.typingPassed, '토씨 시험을 통과한 성구가 없습니다.')}
+    </section>`;
+}
+function renderCalendar() {
+  if (!$('calendarGrid')) return;
+  const year = calendarCursor.getFullYear();
+  const month = calendarCursor.getMonth();
+  $('calendarTitle').textContent = `${year}년 ${month + 1}월`;
+  const firstDay = new Date(year, month, 1).getDay();
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const todayKey = localDateKey();
+  let html = '';
+  for (let i = 0; i < firstDay; i++) html += '<span class="calendar-cell empty" aria-hidden="true"></span>';
+  for (let day = 1; day <= lastDate; day++) {
+    const key = localDateKey(new Date(year, month, day));
+    const activity = getActivity(key);
+    const mastered = activity.mastered.length;
+    const typingPassed = activity.typingPassed.length;
+    const selected = key === selectedCalendarDate ? ' selected' : '';
+    const today = key === todayKey ? ' today' : '';
+    html += `<button class="calendar-cell${selected}${today}" type="button" data-date="${key}">
+      <span class="calendar-day">${day}</span>
+      <span class="calendar-marks">
+        ${mastered ? `<small class="calendar-mark mastered-mark">암기 ${mastered}</small>` : ''}
+        ${typingPassed ? `<small class="calendar-mark typing-mark">토씨 ${typingPassed}</small>` : ''}
+      </span>
+    </button>`;
+  }
+  $('calendarGrid').innerHTML = html;
+  $('calendarGrid').querySelectorAll('[data-date]').forEach(btn => btn.addEventListener('click', () => {
+    selectedCalendarDate = btn.dataset.date;
+    renderCalendar();
+  }));
+  renderDailySummary();
+}
+
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => setActiveView(tab.dataset.view)));
+document.querySelectorAll('.difficulty-btn').forEach(btn => btn.addEventListener('click', () => {
+  blankRate = Number(btn.dataset.rate);
+  document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.toggle('active', b === btn));
+  revealed = false; revealedBlanks.clear(); renderVerses();
+}));
+modeSelect.addEventListener('change', () => { revealed = false; revealedBlanks.clear(); renderVerses(); });
+$('revealBtn').addEventListener('click', () => { revealed = !revealed; if (!revealed) revealedBlanks.clear(); renderVerses(); });
+verseArea.addEventListener('input', (event) => {
+  const input = event.target.closest('.typing-input');
+  if (!input) return;
+  const row = input.closest('.typing-verse');
+  typingDrafts[row.dataset.typingKey] = input.value;
+});
+verseArea.addEventListener('click', (event) => {
+  const blank = event.target.closest('.blank');
+  if (blank && modeSelect.value === 'blank') {
+    const key = blank.dataset.blankKey;
+    if (revealedBlanks.has(key)) revealedBlanks.delete(key);
+    else revealedBlanks.add(key);
+    blank.classList.toggle('revealed');
+    return;
+  }
+  const row = event.target.closest('.typing-verse');
+  if (!row || modeSelect.value !== 'typing') return;
+  const key = row.dataset.typingKey;
+  if (event.target.closest('.typing-check')) {
+    const input = row.querySelector('.typing-input').value;
+    typingDrafts[key] = input;
+    typingResults[key] = normalizeForCheck(input) === normalizeForCheck(row.dataset.answer);
+    if (!typingResults[key]) typingAnswerVisible.add(key);
+    recordTypingPassIfComplete();
+    renderVerses();
+  }
+  if (event.target.closest('.typing-show')) {
+    if (typingAnswerVisible.has(key)) typingAnswerVisible.delete(key);
+    else typingAnswerVisible.add(key);
+    renderVerses();
+  }
+});
+verseArea.addEventListener('keydown', (event) => {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  const blank = event.target.closest('.blank');
+  if (!blank) return;
+  event.preventDefault();
+  blank.click();
+});
+$('masterBtn').addEventListener('click', () => mark('mastered'));
+$('reviewBtn').addEventListener('click', () => mark('review'));
+$('prevBtn').addEventListener('click', () => openStudy(currentIndex - 1, true));
+$('nextBtn').addEventListener('click', () => openStudy(currentIndex + 1, true));
+$('continueBtn').addEventListener('click', () => openStudy(currentIndex));
+$('randomBtn').addEventListener('click', () => {
+  const reviews = data.map((x,i)=>[x,i]).filter(([x]) => progress.review[x.id]);
+  const pool = reviews.length ? reviews : data.map((x,i)=>[x,i]);
+  openStudy(pool[Math.floor(Math.random() * pool.length)][1]);
+});
+$('calendarPrevBtn').addEventListener('click', () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1); renderCalendar(); });
+$('calendarNextBtn').addEventListener('click', () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1); renderCalendar(); });
+$('calendarTodayBtn').addEventListener('click', () => { const today = new Date(); selectedCalendarDate = localDateKey(today); calendarCursor = monthStart(today); renderCalendar(); });
+$('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(progress, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = '성구암기-기록백업.json'; a.click(); URL.revokeObjectURL(url);
+});
+$('importInput').addEventListener('change', async (event) => {
+  const file = event.target.files[0]; if (!file) return;
+  try { progress = normalizeProgress(JSON.parse(await file.text())); saveProgress(); alert('기록을 불러왔습니다.'); }
+  catch { alert('올바른 백업 파일이 아닙니다.'); }
+  event.target.value = '';
+});
+$('resetBtn').addEventListener('click', () => {
+  if (!confirm('암기 기록과 달력 기록을 모두 초기화할까요?')) return;
+  progress = normalizeProgress();
+  saveProgress();
+  openStudy(0);
+});
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
+
+renderList(); updateDashboard(); updateOnlineStatus(); renderCalendar();
