@@ -1,14 +1,9 @@
-{
-  "name": "요한계시록 성구 암기",
-  "short_name": "성구암기",
-  "description": "개역한글 요한계시록 성구 암기용 오프라인 웹앱",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#fffaf0",
-  "theme_color": "#f4c95d",
-  "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
-  ]
-}
+# 배포 방법
+
+이 폴더 안의 파일을 GitHub 저장소 최상위(root)에 그대로 업로드하세요.
+`index.html`, `app.js`, `data.js`, `style.css`, `sw.js`, `manifest.webmanifest`, `icons/`가 저장소 첫 화면에 보여야 합니다.
+
+Vercel에서는 해당 저장소를 다시 배포하세요.
+Framework Preset은 Other, Root Directory는 비워 둡니다.
+
+배포 후 Safari에서 사이트를 새로 연 뒤 기존 홈 화면 아이콘은 삭제하고 다시 추가하세요.
