@@ -1,29 +1,90 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#173f35"><title>성구 암기 훈련</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="style.css">
-<link rel="apple-touch-icon" href="icons/icon-192.png"></head><body>
-<header class="top"><div><p class="eyebrow">개역한글 · 오프라인 암기</p><h1>성구 암기 훈련</h1></div><span id="netBadge" class="badge">확인 중</span></header>
-<nav class="tabs">
-<button class="tab active" data-view="home">홈</button><button class="tab" data-view="range">범위 설정</button><button class="tab" data-view="study">시험</button><button class="tab" data-view="wrong">오답노트</button><button class="tab" data-view="calendar">달력</button>
-</nav>
-<main>
-<section id="homeView" class="view active">
-<div class="hero"><div><p class="muted">저장된 학습 범위</p><strong id="rangeCount">0개</strong></div><div><p class="muted">미해결 오답</p><strong id="wrongCount">0개</strong></div><div><p class="muted">토씨 통과</p><strong id="passCount">0회</strong></div></div>
-<div class="section-title"><h2>내 학습 범위</h2><button id="goRange" class="text-btn">새 범위 만들기</button></div><div id="rangeCards" class="cards"></div>
-</section>
-<section id="rangeView" class="view">
-<h2>시험 범위 설정</h2><p class="muted">여러 구간을 하나의 시험 범위로 묶을 수 있습니다.</p>
-<div class="panel"><label>범위 이름<input id="rangeName" placeholder="예: 이번 주 암기"></label>
-<div class="grid4"><label>성경<select id="bookSelect"></select></label><label>장<select id="chapterSelect"></select></label><label>시작 절<select id="startVerse"></select></label><label>끝 절<select id="endVerse"></select></label></div>
-<button id="addSegment" class="secondary">구간 추가</button><div id="segmentList" class="segment-list"></div><button id="saveRange" class="primary wide">범위 저장</button></div>
-</section>
-<section id="studyView" class="view">
-<div class="study-head"><div><p class="muted">현재 시험</p><h2 id="studyTitle">범위를 선택하세요</h2></div><select id="modeSelect"><option value="typing">직접 입력 · 토씨 검사</option><option value="blank">빈칸 채우기</option><option value="read">본문 읽기</option></select></div>
-<div id="studyToolbar" class="toolbar hidden"><button id="prevVerse" class="secondary">이전</button><span id="studyProgress">0/0</span><button id="nextVerse" class="secondary">다음</button></div>
-<div id="studyArea" class="panel empty">홈에서 시험할 범위를 선택하세요.</div><div id="studyActions" class="actions hidden"><button id="checkAnswer" class="primary">정답 확인</button><button id="showAnswer" class="secondary">정답 보기</button></div>
-</section>
-<section id="wrongView" class="view"><div class="section-title"><div><h2>오답노트</h2><p class="muted">같은 절은 한 항목으로 누적됩니다.</p></div><select id="wrongFilter"><option value="active">복습 필요</option><option value="resolved">통과 완료</option><option value="all">전체</option></select></div><div id="wrongList" class="cards"></div></section>
-<section id="calendarView" class="view"><div class="calendar-head"><button id="prevMonth" class="secondary">‹</button><h2 id="monthLabel"></h2><button id="nextMonth" class="secondary">›</button></div><div class="week"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div id="calendarGrid" class="calendar-grid"></div><div id="dayDetail" class="panel"></div></section>
-</main>
-<footer>성경전서 개역한글판 · 본문 동일성 유지 · 학습 기록은 현재 기기에만 저장됩니다.</footer>
-<script src="bible-data.js"></script><script src="app.js"></script></body></html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#f4c95d" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="성구암기" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="style.css" />
+  <title>성구 암기</title>
+</head>
+<body>
+  <header class="topbar">
+    <div><p class="eyebrow">개역한글 · 오프라인 암기장</p><h1>성구 암기</h1></div>
+    <span id="offlineBadge" class="status-badge">확인 중</span>
+  </header>
+
+  <main>
+    <section class="hero card">
+      <div><p class="eyebrow">오늘도 한 구절씩</p><h2 id="progressTitle">진도를 불러오는 중입니다</h2><p id="progressText" class="muted"></p></div>
+      <div class="progress-shell"><div id="progressBar" class="progress-bar"></div></div>
+      <div class="hero-actions"><button id="continueBtn" class="primary">이어서 공부하기</button><button id="randomBtn" class="secondary">랜덤 복습</button></div>
+    </section>
+
+    <section class="tabs" aria-label="화면 선택">
+      <button class="tab active" data-view="list">암기 목록</button>
+      <button class="tab" data-view="range">범위 설정</button>
+      <button class="tab" data-view="study">공부 화면</button>
+      <button class="tab" data-view="wrong">오답노트</button>
+      <button class="tab" data-view="calendar">학습 달력</button>
+      <button class="tab" data-view="settings">기록 관리</button>
+    </section>
+
+    <section id="listView" class="view active">
+      <div class="section-title"><div><p class="eyebrow">저장한 암기 범위</p><h2>성구 목록</h2></div><span id="passageCount" class="count-pill"></span></div>
+      <div id="passageList" class="passage-grid"></div>
+    </section>
+
+    <section id="rangeView" class="view">
+      <div class="card settings-card">
+        <p class="eyebrow">성경 전체에서 선택</p><h2>시험 범위 만들기</h2>
+        <label class="field-label">범위 이름<input id="rangeName" class="text-input" placeholder="예: 이번 주 암기" /></label>
+        <div class="range-picker">
+          <label>성경<select id="bookSelect"></select></label>
+          <label>장<select id="chapterSelect"></select></label>
+          <label>시작 절<select id="startVerse"></select></label>
+          <label>끝 절<select id="endVerse"></select></label>
+        </div>
+        <div class="settings-actions"><button id="addSegment" class="secondary">구간 추가</button><button id="saveRange" class="primary">범위 저장</button></div>
+        <div id="segmentList" class="segment-list"></div>
+      </div>
+    </section>
+
+    <section id="studyView" class="view">
+      <article class="study-card card">
+        <div class="study-head"><div><p id="studyCategory" class="eyebrow"></p><h2 id="studyRef">성구를 선택해 주세요</h2></div>
+          <select id="modeSelect"><option value="read">본문 읽기</option><option value="blank">빈칸 채우기</option><option value="initial">첫 글자 힌트</option><option value="typing">직접 입력 · 토씨 검사</option></select>
+        </div>
+        <div id="difficultyArea" class="difficulty hidden"><span>빈칸 난이도</span><button class="difficulty-btn active" data-rate="0.3">30%</button><button class="difficulty-btn" data-rate="0.5">50%</button><button class="difficulty-btn" data-rate="0.8">80%</button></div>
+        <p id="typingGuide" class="typing-guide hidden">절별로 말씀을 직접 적고 <strong>정답 확인</strong>을 누르세요. 띄어쓰기와 문장부호는 제외하고, 단어와 토씨는 정확히 비교합니다.</p>
+        <div id="verseArea" class="verse-area empty-state">목록에서 공부할 성구를 선택해 주세요.</div>
+        <div class="study-actions"><button id="revealBtn" class="secondary">정답 보기</button><button id="reviewBtn" class="secondary">복습 필요</button><button id="masterBtn" class="primary">암기 완료</button></div>
+        <div class="nav-actions"><button id="prevBtn" class="ghost">← 이전</button><span id="studyProgress" class="muted"></span><button id="nextBtn" class="ghost">다음 →</button></div>
+      </article>
+    </section>
+
+    <section id="wrongView" class="view">
+      <div class="section-title"><div><p class="eyebrow">틀린 절 자동 기록</p><h2>오답노트</h2></div><select id="wrongFilter"><option value="active">복습 필요</option><option value="resolved">통과 완료</option><option value="all">전체</option></select></div>
+      <div id="wrongList" class="passage-grid"></div>
+    </section>
+
+    <section id="calendarView" class="view">
+      <div class="card calendar-card"><div class="calendar-head"><div><p class="eyebrow">날짜별 학습 기록</p><h2 id="calendarTitle">학습 달력</h2></div><div class="calendar-nav"><button id="calendarPrevBtn" class="ghost">←</button><button id="calendarTodayBtn" class="secondary compact">오늘</button><button id="calendarNextBtn" class="ghost">→</button></div></div>
+        <div class="calendar-weekdays"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div id="calendarGrid" class="calendar-grid"></div>
+      </div>
+      <div class="card daily-card"><p id="selectedDateLabel" class="eyebrow"></p><h2>학습 기록</h2><div id="dailySummary" class="daily-summary"></div></div>
+    </section>
+
+    <section id="settingsView" class="view">
+      <div class="card settings-card"><p class="eyebrow">기기 안에 저장됩니다</p><h2>진도 기록 관리</h2><p class="muted">암기 범위, 암기 완료, 오답노트와 달력 기록이 현재 기기에 저장됩니다.</p><div class="settings-actions"><button id="exportBtn" class="secondary">기록 백업하기</button><label class="secondary file-label">기록 불러오기<input id="importInput" type="file" accept="application/json" /></label><button id="resetBtn" class="danger">기록 초기화</button></div></div>
+    </section>
+  </main>
+  <footer><p>본문: 성경전서 개역한글판 · 대한성서공회</p><p>개인 암기용 오프라인 웹앱</p></footer>
+  <script src="bible-data.js"></script><script src="app.js"></script>
+</body>
+</html>
