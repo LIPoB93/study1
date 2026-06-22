@@ -1,363 +1,41 @@
-const STORAGE_KEY = 'revelation-memory-progress-v1';
-const data = window.SCRIPTURE_DATA;
-let progress = loadProgress();
-let currentIndex = Math.max(0, data.findIndex(item => item.id === progress.lastId));
-let blankRate = 0.3;
-let revealed = false;
-let revealedBlanks = new Set();
-let typingDrafts = {};
-let typingResults = {};
-let typingAnswerVisible = new Set();
-let selectedCalendarDate = localDateKey(new Date());
-let calendarCursor = monthStart(new Date());
-
-const $ = (id) => document.getElementById(id);
-const passageList = $('passageList');
-const verseArea = $('verseArea');
-const modeSelect = $('modeSelect');
-
-function localDateKey(date = new Date()) {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-function monthStart(date) { return new Date(date.getFullYear(), date.getMonth(), 1); }
-function parseLocalDate(key) {
-  const [year, month, day] = key.split('-').map(Number);
-  return new Date(year, month - 1, day);
-}
-function normalizeProgress(raw = {}) {
-  return {
-    mastered: {},
-    review: {},
-    activity: {},
-    lastId: data?.[0]?.id || '',
-    ...raw,
-    mastered: raw.mastered || {},
-    review: raw.review || {},
-    activity: raw.activity || {}
-  };
-}
-function loadProgress() {
-  try { return normalizeProgress(JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}')); }
-  catch { return normalizeProgress(); }
-}
-function persistProgress() { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }
-function saveProgress() {
-  persistProgress();
-  updateDashboard();
-  renderList();
-  renderCalendar();
-}
-function current() { return data[currentIndex]; }
-function masteredCount() { return data.filter(item => progress.mastered[item.id]).length; }
-function getActivity(dateKey) {
-  return progress.activity[dateKey] || { mastered: [], typingPassed: [] };
-}
-function ensureActivity(dateKey) {
-  if (!progress.activity[dateKey]) progress.activity[dateKey] = { mastered: [], typingPassed: [] };
-  if (!Array.isArray(progress.activity[dateKey].mastered)) progress.activity[dateKey].mastered = [];
-  if (!Array.isArray(progress.activity[dateKey].typingPassed)) progress.activity[dateKey].typingPassed = [];
-  return progress.activity[dateKey];
-}
-function recordActivity(type, id) {
-  const activity = ensureActivity(localDateKey());
-  if (!activity[type].includes(id)) activity[type].push(id);
-  saveProgress();
-}
-function updateDashboard() {
-  const count = masteredCount();
-  const percent = Math.round(count / data.length * 100);
-  const today = getActivity(localDateKey());
-  $('progressTitle').textContent = `${count}/${data.length}개 암기 완료`;
-  $('progressText').textContent = percent === 100
-    ? `전체 진도 100% · 오늘 암기 ${today.mastered.length}개 · 토씨 통과 ${today.typingPassed.length}개`
-    : `전체 진도 ${percent}% · 복습 필요 ${Object.values(progress.review).filter(Boolean).length}개 · 오늘 토씨 통과 ${today.typingPassed.length}개`;
-  $('progressBar').style.width = `${percent}%`;
-  $('passageCount').textContent = `${data.length}개 범위`;
-}
-function badge(item) {
-  if (progress.mastered[item.id]) return '<span class="mini-badge mastered">암기 완료</span>';
-  if (progress.review[item.id]) return '<span class="mini-badge review">복습 필요</span>';
-  return '<span class="mini-badge">학습 전</span>';
-}
-function renderList() {
-  passageList.innerHTML = data.map((item, index) => `
-    <button class="passage-item" data-index="${index}">
-      <h3>${escapeHtml(item.ref)}</h3>
-      <div class="passage-meta"><span>${escapeHtml(item.category)} · ${item.verses.length}절</span>${badge(item)}</div>
-    </button>`).join('');
-  document.querySelectorAll('.passage-item').forEach(btn => btn.addEventListener('click', () => openStudy(Number(btn.dataset.index))));
-}
-function setActiveView(view) {
-  document.querySelectorAll('.tab').forEach(tab => tab.classList.toggle('active', tab.dataset.view === view));
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  $(`${view}View`).classList.add('active');
-  if (view === 'calendar') renderCalendar();
-}
-function openStudy(index, keepMode = false) {
-  currentIndex = (index + data.length) % data.length;
-  const item = current();
-  progress.lastId = item.id;
-  persistProgress();
-  if (!keepMode) modeSelect.value = item.preferredMode || 'read';
-  revealed = false;
-  revealedBlanks.clear();
-  $('studyRef').textContent = item.ref;
-  $('studyCategory').textContent = item.category;
-  renderVerses();
-  setActiveView('study');
-}
-function hashWord(word, idx) {
-  let h = idx + currentIndex * 17;
-  for (const ch of word) h = ((h << 5) - h) + ch.charCodeAt(0);
-  return Math.abs(h % 1000) / 1000;
-}
-function blankify(text, verseNum) {
-  let idx = 0;
-  return text.split(/(\s+)/).map(token => {
-    if (/^\s+$/.test(token) || token.length < 2) return token;
-    const tokenIndex = idx++;
-    const shouldBlank = hashWord(token, tokenIndex) < blankRate;
-    if (!shouldBlank) return token;
-    const key = `${verseNum}-${tokenIndex}`;
-    const isRevealed = revealed || revealedBlanks.has(key);
-    return `<span class="blank${isRevealed ? ' revealed' : ''}" data-blank-key="${key}" role="button" tabindex="0" aria-label="빈칸 정답 보기">${escapeHtml(token)}</span>`;
-  }).join('');
-}
-function initials(text) {
-  const initialMap = ['ㄱ','ㄲ','ㄴ','ㄷ','ㄸ','ㄹ','ㅁ','ㅂ','ㅃ','ㅅ','ㅆ','ㅇ','ㅈ','ㅉ','ㅊ','ㅋ','ㅌ','ㅍ','ㅎ'];
-  return [...text].map(ch => {
-    const code = ch.charCodeAt(0) - 0xAC00;
-    if (code >= 0 && code <= 11171) return initialMap[Math.floor(code / 588)];
-    return ch;
-  }).join('');
-}
-function typingKey(verseNum) { return `${current().id}-${verseNum}`; }
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' }[ch]));
-}
-function normalizeForCheck(value) {
-  return String(value || '')
-    .normalize('NFC')
-    .replace(/[\s.,!?，。！？·'“”"‘’():;()\[\]{}]/g, '');
-}
-function typingPassedForCurrent() {
-  return current().verses.every(([num]) => typingResults[typingKey(num)] === true);
-}
-function typingCorrectCount() {
-  return current().verses.filter(([num]) => typingResults[typingKey(num)] === true).length;
-}
-function recordTypingPassIfComplete() {
-  if (!typingPassedForCurrent()) return;
-  const today = ensureActivity(localDateKey());
-  if (!today.typingPassed.includes(current().id)) {
-    today.typingPassed.push(current().id);
-    saveProgress();
-  }
-}
-function renderTypingStatus() {
-  const correct = typingCorrectCount();
-  const total = current().verses.length;
-  const passedToday = getActivity(localDateKey()).typingPassed.includes(current().id);
-  if (passedToday || correct === total) return `<div class="typing-progress passed">토씨 시험 통과 · 오늘 기록됨</div>`;
-  return `<div class="typing-progress">토씨 시험 진행 ${correct}/${total}절</div>`;
-}
-function renderTypingVerse(num, text) {
-  const key = typingKey(num);
-  const draft = typingDrafts[key] || '';
-  const result = typingResults[key];
-  const showAnswer = revealed || typingAnswerVisible.has(key);
-  const resultHtml = result === true
-    ? '<span class="typing-result correct">정답입니다.</span>'
-    : result === false
-      ? '<span class="typing-result wrong">일치하지 않습니다. 토씨를 다시 확인해 보세요.</span>'
-      : '';
-  return `<div class="typing-verse" data-typing-key="${key}" data-answer="${escapeHtml(text)}">
-    <div class="typing-label">${num}절 직접 입력</div>
-    <textarea class="typing-input" rows="3" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="말씀을 토씨까지 적어 보세요">${escapeHtml(draft)}</textarea>
-    <div class="typing-controls">
-      <button class="typing-check" type="button">정답 확인</button>
-      <button class="typing-show" type="button">${showAnswer ? '정답 숨기기' : '정답 보기'}</button>
-      ${resultHtml}
-    </div>
-    <div class="typing-answer${showAnswer ? '' : ' hidden'}"><strong>정답</strong><br>${escapeHtml(text)}</div>
-  </div>`;
-}
-function renderVerses() {
-  const item = current();
-  if (!item) return;
-  const mode = modeSelect.value;
-  $('difficultyArea').classList.toggle('hidden', mode !== 'blank');
-  $('typingGuide').classList.toggle('hidden', mode !== 'typing');
-  $('revealBtn').textContent = revealed ? '정답 숨기기' : (mode === 'typing' ? '전체 정답 보기' : '정답 보기');
-  $('revealBtn').style.display = mode === 'read' ? 'none' : '';
-  verseArea.classList.remove('empty-state');
-  if (mode === 'typing') {
-    verseArea.innerHTML = renderTypingStatus() + item.verses.map(([num, text]) => renderTypingVerse(num, text)).join('');
-    return;
-  }
-  verseArea.innerHTML = item.verses.map(([num, text]) => {
-    let body = escapeHtml(text);
-    if (mode === 'blank') body = blankify(text, num);
-    if (mode === 'initial') body = `<span class="initial-text">${escapeHtml(initials(text))}</span>${revealed ? `<div class="muted" style="margin-top:7px">${escapeHtml(text)}</div>` : ''}`;
-    return `<div class="verse-row"><span class="verse-num">${num}</span>${body}</div>`;
-  }).join('');
-}
-function mark(type) {
-  const id = current().id;
-  if (type === 'mastered') {
-    progress.mastered[id] = true;
-    delete progress.review[id];
-    recordActivity('mastered', id);
-  } else {
-    progress.review[id] = true;
-    delete progress.mastered[id];
-    saveProgress();
-  }
-  renderVerses();
-}
-function updateOnlineStatus() {
-  const online = navigator.onLine;
-  $('offlineBadge').textContent = online ? '온라인' : '오프라인 사용 중';
-  $('offlineBadge').classList.toggle('offline', !online);
-}
-function dataItem(id) { return data.find(item => item.id === id); }
-function formatDateLabel(key) {
-  const date = parseLocalDate(key);
-  const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
-  return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 (${weekdays[date.getDay()]})`;
-}
-function renderActivityList(ids, emptyMessage) {
-  if (!ids.length) return `<p class="daily-empty">${emptyMessage}</p>`;
-  return `<ul>${ids.map(id => `<li>${escapeHtml(dataItem(id)?.ref || id)}</li>`).join('')}</ul>`;
-}
-function renderDailySummary() {
-  const activity = getActivity(selectedCalendarDate);
-  $('selectedDateLabel').textContent = formatDateLabel(selectedCalendarDate);
-  $('dailySummary').innerHTML = `
-    <section class="daily-block">
-      <div class="daily-block-title"><strong>암기 완료</strong><span>${activity.mastered.length}개</span></div>
-      ${renderActivityList(activity.mastered, '암기 완료로 기록한 성구가 없습니다.')}
-    </section>
-    <section class="daily-block">
-      <div class="daily-block-title"><strong>토씨 시험 통과</strong><span>${activity.typingPassed.length}개</span></div>
-      ${renderActivityList(activity.typingPassed, '토씨 시험을 통과한 성구가 없습니다.')}
-    </section>`;
-}
-function renderCalendar() {
-  if (!$('calendarGrid')) return;
-  const year = calendarCursor.getFullYear();
-  const month = calendarCursor.getMonth();
-  $('calendarTitle').textContent = `${year}년 ${month + 1}월`;
-  const firstDay = new Date(year, month, 1).getDay();
-  const lastDate = new Date(year, month + 1, 0).getDate();
-  const todayKey = localDateKey();
-  let html = '';
-  for (let i = 0; i < firstDay; i++) html += '<span class="calendar-cell empty" aria-hidden="true"></span>';
-  for (let day = 1; day <= lastDate; day++) {
-    const key = localDateKey(new Date(year, month, day));
-    const activity = getActivity(key);
-    const mastered = activity.mastered.length;
-    const typingPassed = activity.typingPassed.length;
-    const selected = key === selectedCalendarDate ? ' selected' : '';
-    const today = key === todayKey ? ' today' : '';
-    html += `<button class="calendar-cell${selected}${today}" type="button" data-date="${key}">
-      <span class="calendar-day">${day}</span>
-      <span class="calendar-marks">
-        ${mastered ? `<small class="calendar-mark mastered-mark">암기 ${mastered}</small>` : ''}
-        ${typingPassed ? `<small class="calendar-mark typing-mark">토씨 ${typingPassed}</small>` : ''}
-      </span>
-    </button>`;
-  }
-  $('calendarGrid').innerHTML = html;
-  $('calendarGrid').querySelectorAll('[data-date]').forEach(btn => btn.addEventListener('click', () => {
-    selectedCalendarDate = btn.dataset.date;
-    renderCalendar();
-  }));
-  renderDailySummary();
-}
-
-document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => setActiveView(tab.dataset.view)));
-document.querySelectorAll('.difficulty-btn').forEach(btn => btn.addEventListener('click', () => {
-  blankRate = Number(btn.dataset.rate);
-  document.querySelectorAll('.difficulty-btn').forEach(b => b.classList.toggle('active', b === btn));
-  revealed = false; revealedBlanks.clear(); renderVerses();
-}));
-modeSelect.addEventListener('change', () => { revealed = false; revealedBlanks.clear(); renderVerses(); });
-$('revealBtn').addEventListener('click', () => { revealed = !revealed; if (!revealed) revealedBlanks.clear(); renderVerses(); });
-verseArea.addEventListener('input', (event) => {
-  const input = event.target.closest('.typing-input');
-  if (!input) return;
-  const row = input.closest('.typing-verse');
-  typingDrafts[row.dataset.typingKey] = input.value;
-});
-verseArea.addEventListener('click', (event) => {
-  const blank = event.target.closest('.blank');
-  if (blank && modeSelect.value === 'blank') {
-    const key = blank.dataset.blankKey;
-    if (revealedBlanks.has(key)) revealedBlanks.delete(key);
-    else revealedBlanks.add(key);
-    blank.classList.toggle('revealed');
-    return;
-  }
-  const row = event.target.closest('.typing-verse');
-  if (!row || modeSelect.value !== 'typing') return;
-  const key = row.dataset.typingKey;
-  if (event.target.closest('.typing-check')) {
-    const input = row.querySelector('.typing-input').value;
-    typingDrafts[key] = input;
-    typingResults[key] = normalizeForCheck(input) === normalizeForCheck(row.dataset.answer);
-    if (!typingResults[key]) typingAnswerVisible.add(key);
-    recordTypingPassIfComplete();
-    renderVerses();
-  }
-  if (event.target.closest('.typing-show')) {
-    if (typingAnswerVisible.has(key)) typingAnswerVisible.delete(key);
-    else typingAnswerVisible.add(key);
-    renderVerses();
-  }
-});
-verseArea.addEventListener('keydown', (event) => {
-  if (event.key !== 'Enter' && event.key !== ' ') return;
-  const blank = event.target.closest('.blank');
-  if (!blank) return;
-  event.preventDefault();
-  blank.click();
-});
-$('masterBtn').addEventListener('click', () => mark('mastered'));
-$('reviewBtn').addEventListener('click', () => mark('review'));
-$('prevBtn').addEventListener('click', () => openStudy(currentIndex - 1, true));
-$('nextBtn').addEventListener('click', () => openStudy(currentIndex + 1, true));
-$('continueBtn').addEventListener('click', () => openStudy(currentIndex));
-$('randomBtn').addEventListener('click', () => {
-  const reviews = data.map((x,i)=>[x,i]).filter(([x]) => progress.review[x.id]);
-  const pool = reviews.length ? reviews : data.map((x,i)=>[x,i]);
-  openStudy(pool[Math.floor(Math.random() * pool.length)][1]);
-});
-$('calendarPrevBtn').addEventListener('click', () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() - 1, 1); renderCalendar(); });
-$('calendarNextBtn').addEventListener('click', () => { calendarCursor = new Date(calendarCursor.getFullYear(), calendarCursor.getMonth() + 1, 1); renderCalendar(); });
-$('calendarTodayBtn').addEventListener('click', () => { const today = new Date(); selectedCalendarDate = localDateKey(today); calendarCursor = monthStart(today); renderCalendar(); });
-$('exportBtn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(progress, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = '성구암기-기록백업.json'; a.click(); URL.revokeObjectURL(url);
-});
-$('importInput').addEventListener('change', async (event) => {
-  const file = event.target.files[0]; if (!file) return;
-  try { progress = normalizeProgress(JSON.parse(await file.text())); saveProgress(); alert('기록을 불러왔습니다.'); }
-  catch { alert('올바른 백업 파일이 아닙니다.'); }
-  event.target.value = '';
-});
-$('resetBtn').addEventListener('click', () => {
-  if (!confirm('암기 기록과 달력 기록을 모두 초기화할까요?')) return;
-  progress = normalizeProgress();
-  saveProgress();
-  openStudy(0);
-});
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-
-renderList(); updateDashboard(); updateOnlineStatus(); renderCalendar();
+const DB=window.BIBLE_DATA;const KEY='bible-memory-v5';
+const $=id=>document.getElementById(id);let state=load();let draftSegments=[];let activeRange=null;let verses=[];let verseIndex=0;let showAnswer=false;let calCursor=new Date(new Date().getFullYear(),new Date().getMonth(),1);let selectedDay=dateKey(new Date());
+function load(){try{return normalize(JSON.parse(localStorage.getItem(KEY)||'{}'))}catch{return normalize({})}}
+function normalize(x){return{ranges:Array.isArray(x.ranges)?x.ranges:defaultRanges(),wrong:x.wrong||{},activity:x.activity||{},passes:x.passes||0}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));renderHome();renderWrong();renderCalendar()}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function dateKey(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function defaultRanges(){return[
+{id:'preset-rev7',name:'요한계시록 7장',segments:[{book:'Rev',chapter:7,start:1,end:17}]},
+{id:'preset-rev14',name:'요한계시록 14장',segments:[{book:'Rev',chapter:14,start:1,end:20}]},
+{id:'preset-rev15',name:'요한계시록 15장',segments:[{book:'Rev',chapter:15,start:1,end:8}]},
+{id:'preset-short',name:'지정 성구 모음',segments:[{book:'Rev',chapter:1,start:1,end:3},{book:'Rev',chapter:10,start:10,end:11},{book:'Rev',chapter:20,start:4,end:6},{book:'Rev',chapter:22,start:1,end:5},{book:'Rev',chapter:22,start:18,end:19}]}]}
+function book(code){return DB.find(b=>b.code===code)}
+function segLabel(s){const b=book(s.book);return `${b.name} ${s.chapter}:${s.start}${s.end!==s.start?'~'+s.end:''}`}
+function flattenRange(r){let arr=[];for(const s of r.segments){const b=book(s.book),ch=b.chapters[s.chapter-1]||[];for(let v=s.start;v<=Math.min(s.end,ch.length);v++)arr.push({key:`${s.book}-${s.chapter}-${v}`,book:s.book,bookName:b.name,chapter:s.chapter,verse:v,text:ch[v-1],ref:`${b.name} ${s.chapter}:${v}`})}return arr}
+function setView(v){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===v));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===v+'View'));if(v==='calendar')renderCalendar()}
+document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>setView(x.dataset.view));$('goRange').onclick=()=>setView('range');
+function renderHome(){$('rangeCount').textContent=state.ranges.length+'개';$('wrongCount').textContent=Object.values(state.wrong).filter(x=>!x.resolved).length+'개';$('passCount').textContent=state.passes+'회';$('rangeCards').innerHTML=state.ranges.length?state.ranges.map(r=>`<article class="card"><div class="card-row"><div><h3>${esc(r.name)}</h3><p class="muted">${r.segments.map(segLabel).join(' · ')}</p></div><span>${flattenRange(r).length}절</span></div><div class="card-actions"><button class="primary start" data-id="${r.id}">시험 시작</button><button class="secondary read" data-id="${r.id}">본문 보기</button><button class="danger del" data-id="${r.id}">삭제</button></div></article>`).join(''):'<div class="panel empty">저장된 범위가 없습니다.</div>';document.querySelectorAll('.start').forEach(b=>b.onclick=()=>startRange(b.dataset.id,'typing'));document.querySelectorAll('.read').forEach(b=>b.onclick=()=>startRange(b.dataset.id,'read'));document.querySelectorAll('.del').forEach(b=>b.onclick=()=>{if(confirm('이 범위를 삭제할까요?')){state.ranges=state.ranges.filter(r=>r.id!==b.dataset.id);save()}})}
+function fillBooks(){$('bookSelect').innerHTML='<optgroup label="구약">'+DB.filter(b=>b.testament==='구약').map(b=>`<option value="${b.code}">${b.name}</option>`).join('')+'</optgroup><optgroup label="신약">'+DB.filter(b=>b.testament==='신약').map(b=>`<option value="${b.code}">${b.name}</option>`).join('')+'</optgroup>';updateChapters()}
+function updateChapters() {const b=book($('bookSelect').value);$('chapterSelect').innerHTML=b.chapters.map((_,i)=>`<option value="${i+1}">${i+1}장</option>`).join('');updateVerses()}
+function updateVerses(){const b=book($('bookSelect').value),ch=Number($('chapterSelect').value),n=b.chapters[ch-1].length;const opts=Array.from({length:n},(_,i)=>`<option value="${i+1}">${i+1}절</option>`).join('');$('startVerse').innerHTML=opts;$('endVerse').innerHTML=opts;$('endVerse').value=n}
+$('bookSelect').onchange=updateChapters;$('chapterSelect').onchange=updateVerses;
+$('addSegment').onclick=()=>{const s={book:$('bookSelect').value,chapter:+$('chapterSelect').value,start:+$('startVerse').value,end:+$('endVerse').value};if(s.start>s.end)[s.start,s.end]=[s.end,s.start];draftSegments.push(s);renderSegments()}
+function renderSegments(){$('segmentList').innerHTML=draftSegments.map((s,i)=>`<div class="segment"><span>${esc(segLabel(s))}</span><button class="danger remove-seg" data-i="${i}">삭제</button></div>`).join('');document.querySelectorAll('.remove-seg').forEach(b=>b.onclick=()=>{draftSegments.splice(+b.dataset.i,1);renderSegments()})}
+$('saveRange').onclick=()=>{const name=$('rangeName').value.trim();if(!name)return alert('범위 이름을 입력하세요.');if(!draftSegments.length)return alert('구간을 한 개 이상 추가하세요.');state.ranges.push({id:id(),name,segments:structuredClone(draftSegments)});$('rangeName').value='';draftSegments=[];renderSegments();save();setView('home')}
+function startRange(rid,mode){activeRange=state.ranges.find(r=>r.id===rid);if(!activeRange)return;verses=flattenRange(activeRange);verseIndex=0;showAnswer=false;$('modeSelect').value=mode;$('studyTitle').textContent=activeRange.name;$('studyToolbar').classList.remove('hidden');$('studyActions').classList.toggle('hidden',mode==='read');renderStudy();setView('study')}
+$('modeSelect').onchange=()=>{showAnswer=false;$('studyActions').classList.toggle('hidden',$('modeSelect').value==='read');renderStudy()};$('prevVerse').onclick=()=>{if(verseIndex>0){verseIndex--;showAnswer=false;renderStudy()}};$('nextVerse').onclick=()=>{if(verseIndex<verses.length-1){verseIndex++;showAnswer=false;renderStudy()}};
+function normalizeText(s){return String(s||'').normalize('NFC').replace(/[\s.,!?，。！？·'“”"‘’():;()\[\]{}]/g,'')}
+function blankHtml(text){let i=0;return text.split(/(\s+)/).map(t=>{if(/^\s+$/.test(t)||t.length<2)return esc(t);const hide=((i++*37+verseIndex*17)%100)<55;return hide?`<span class="blank-word" tabindex="0">${esc(t)}</span>`:esc(t)}).join('')}
+function renderStudy(){if(!activeRange||!verses.length)return;const v=verses[verseIndex],mode=$('modeSelect').value;$('studyProgress').textContent=`${verseIndex+1}/${verses.length}`;let body=`<div class="verse-ref">${esc(v.ref)}</div>`;if(mode==='typing')body+=`<textarea id="typingInput" class="typing-input" placeholder="말씀을 토씨까지 입력하세요" autocorrect="off" spellcheck="false"></textarea><div id="resultArea"></div>`;else if(mode==='blank')body+=`<div class="verse-text">${blankHtml(v.text)}</div>`;else body+=`<div class="verse-text">${esc(v.text)}</div>`;$('studyArea').classList.remove('empty');$('studyArea').innerHTML=body;document.querySelectorAll('.blank-word').forEach(x=>x.onclick=()=>x.classList.toggle('reveal'))}
+function diffChars(input,answer){const a=[...normalizeText(answer)],b=[...normalizeText(input)],m=a.length,n=b.length,dp=Array.from({length:m+1},()=>new Uint16Array(n+1));for(let i=m-1;i>=0;i--)for(let j=n-1;j>=0;j--)dp[i][j]=a[i]===b[j]?dp[i+1][j+1]+1:Math.max(dp[i+1][j],dp[i][j+1]);let i=0,j=0,exp='',got='';while(i<m||j<n){if(i<m&&j<n&&a[i]===b[j]){exp+=esc(a[i]);got+=esc(b[j]);i++;j++}else if(j<n&&(i===m||dp[i][j+1]>=dp[i+1][j])){got+=`<span class="diff-extra">${esc(b[j++])}</span>`}else if(i<m){exp+=`<span class="diff-missing">${esc(a[i++])}</span>`}}return{exp,got}}
+$('checkAnswer').onclick=()=>{if(!activeRange)return;const v=verses[verseIndex],mode=$('modeSelect').value;if(mode!=='typing')return;const input=$('typingInput').value,ok=normalizeText(input)===normalizeText(v.text);const d=diffChars(input,v.text);$('resultArea').innerHTML=ok?'<div class="result-box correct">정답입니다.</div>':`<div class="result-box"><div class="wrong">일치하지 않습니다.</div><div class="diff-line"><strong>내 입력</strong><br>${d.got||'(입력 없음)'}</div><div class="diff-line"><strong>정답 기준</strong><br>${d.exp}</div><div class="answer-box"><strong>정답</strong><br>${esc(v.text)}</div></div>`;recordAttempt(v,input,ok);if(ok&&verseIndex===verses.length-1)completeRange()}
+$('showAnswer').onclick=()=>{if(!activeRange)return;showAnswer=!showAnswer;const old=$('studyArea').querySelector('.answer-box.manual');if(old)old.remove();if(showAnswer){const v=verses[verseIndex],d=document.createElement('div');d.className='answer-box manual';d.innerHTML=`<strong>정답</strong><br>${esc(v.text)}`;$('studyArea').appendChild(d)}}
+function recordAttempt(v,input,ok){const old=state.wrong[v.key];if(ok){if(old){old.resolved=true;old.resolvedAt=dateKey(new Date());old.lastInput=input}}else{state.wrong[v.key]={key:v.key,ref:v.ref,answer:v.text,lastInput:input,count:(old?.count||0)+1,lastWrong:dateKey(new Date()),resolved:false}}save()}
+function completeRange(){const k=dateKey(new Date());state.activity[k]=state.activity[k]||{passed:[]};if(!state.activity[k].passed.some(x=>x.id===activeRange.id))state.activity[k].passed.push({id:activeRange.id,name:activeRange.name});state.passes++;save();setTimeout(()=>alert('선택한 범위의 마지막 절까지 통과했습니다. 달력에 기록했습니다.'),50)}
+function renderWrong(){const filter=$('wrongFilter').value;let arr=Object.values(state.wrong).filter(x=>filter==='all'||(filter==='resolved'?x.resolved:!x.resolved)).sort((a,b)=>(b.lastWrong||'').localeCompare(a.lastWrong||'')||b.count-a.count);$('wrongList').innerHTML=arr.length?arr.map(x=>`<article class="card wrong-card ${x.resolved?'resolved':'active'}"><div class="card-row"><h3>${esc(x.ref)}</h3><strong>${x.count}회</strong></div><div class="wrong-meta"><span>최근 오답 ${x.lastWrong||'-'}</span><span>${x.resolved?'재시험 통과':'복습 필요'}</span></div><div class="answer-box"><strong>최근 입력</strong><br>${esc(x.lastInput||'(없음)')}<br><br><strong>정답</strong><br>${esc(x.answer)}</div><div class="card-actions"><button class="primary retry" data-key="${x.key}">이 절 재시험</button><button class="secondary resolve" data-key="${x.key}">${x.resolved?'복습 필요로 변경':'완료 처리'}</button></div></article>`).join(''):'<div class="panel empty">해당 오답 기록이 없습니다.</div>';document.querySelectorAll('.retry').forEach(b=>b.onclick=()=>retryVerse(b.dataset.key));document.querySelectorAll('.resolve').forEach(b=>b.onclick=()=>{state.wrong[b.dataset.key].resolved=!state.wrong[b.dataset.key].resolved;save()})}
+$('wrongFilter').onchange=renderWrong;function retryVerse(key){const w=state.wrong[key],[code,ch,vs]=key.split('-');activeRange={id:'retry-'+key,name:`${w.ref} 재시험`,segments:[{book:code,chapter:+ch,start:+vs,end:+vs}]};verses=flattenRange(activeRange);verseIndex=0;$('modeSelect').value='typing';$('studyTitle').textContent=activeRange.name;$('studyToolbar').classList.remove('hidden');$('studyActions').classList.remove('hidden');renderStudy();setView('study')}
+function renderCalendar(){const y=calCursor.getFullYear(),m=calCursor.getMonth();$('monthLabel').textContent=`${y}년 ${m+1}월`;const first=new Date(y,m,1),start=new Date(y,m,1-first.getDay());let html='';for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const k=dateKey(d),a=state.activity[k],cnt=a?.passed?.length||0;html+=`<button class="day ${d.getMonth()!==m?'dim':''} ${k===dateKey(new Date())?'today':''} ${k===selectedDay?'selected':''}" data-date="${k}"><span class="day-num">${d.getDate()}</span>${cnt?`<div class="dots">토씨 통과 ${cnt}</div>`:''}</button>`}$('calendarGrid').innerHTML=html;document.querySelectorAll('.day').forEach(b=>b.onclick=()=>{selectedDay=b.dataset.date;renderCalendar()});const items=state.activity[selectedDay]?.passed||[];$('dayDetail').innerHTML=`<strong>${selectedDay}</strong>${items.length?`<ul class="day-detail-list">${items.map(x=>`<li>토씨 시험 통과: ${esc(x.name)}</li>`).join('')}</ul>`:'<p class="muted">기록이 없습니다.</p>'}`}
+$('prevMonth').onclick=()=>{calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()-1,1);renderCalendar()};$('nextMonth').onclick=()=>{calCursor=new Date(calCursor.getFullYear(),calCursor.getMonth()+1,1);renderCalendar()};
+function online(){const on=navigator.onLine;$('netBadge').textContent=on?'온라인':'오프라인 사용 중'}window.addEventListener('online',online);window.addEventListener('offline',online);if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js');fillBooks();renderHome();renderWrong();renderCalendar();online();
